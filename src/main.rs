@@ -59,13 +59,13 @@ fn main() -> Result<(), i8> {
         exit(-1);
     });
 
-    //TODO: Create color pallette
+    //Create color pallette
     println!("Creating color pallette");
     
     //Create color pallette and then write this pallette to file
     let mut pallette_colors: Vec<u16> = Vec::new();
     create_pallette(&img, &mut pallette_colors);
-    //
+    
     if pallette_colors.len() == 0{
         println!("Something went wrong while trying to create the color pallette");
         exit(-1);
@@ -107,7 +107,7 @@ fn rgb888_to_bgr555(rgb888_input: Pixel) -> u16 {
     let unset_g = unset_LSBs(rgb888_input.g) >> 3;
     let unset_b = unset_LSBs(rgb888_input.b) >> 3;
 
-    //TODO: Set correspoding bits of u16 output
+    //Set correspoding bits of u16 output
     bgr555_out = bgr555_out ^ (unset_r as u16);
     bgr555_out = bgr555_out ^ ((unset_g as u16) << 5);
     bgr555_out = bgr555_out ^ ((unset_b as u16) << 10);
