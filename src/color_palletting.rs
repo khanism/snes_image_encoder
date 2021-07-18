@@ -75,7 +75,9 @@ pub fn write_pallette(filepath: &str, color_pallette: &Vec<u16>){
     //Write all bytes of the color pallette to file
     //Bytes of pallette must be written in little endian order
 
-    let mut buffer: Vec<u8> = Vec::new();
+    //Use white (0xffff) as the alpha channel, which would be the first index of the pallette
+    let mut buffer: Vec<u8> = vec![0xff, 0xff];
+
     for idx in 0..color_pallette.len() {
         //Reverse order of u16 val
         let bgr555_color = color_pallette[idx];
