@@ -2,6 +2,7 @@ use std::process::exit;
 use std::{env};
 
 mod color_palletting;
+mod bitplaning;
 
 fn print_usage_and_exit() {
     println!("Usage: snes_image_encoder -i <input file> -o <output file>");
@@ -41,7 +42,10 @@ fn main() -> Result<(), i8> {
     
     //Create color pallette and then write this pallette to file
     let mut pallette_colors: Vec<u16> = Vec::new();
-    color_palletting::create_pallette(&img, &mut pallette_colors);
+    //Create index vector, that will hold a index for every corresponding pixel in the input image
+    let mut indices: Vec<u8>  = vec![0; (img.get_width()*img.get_height()) as usize];
+
+    color_palletting::create_pallette_and_indexing(&img, &mut pallette_colors, &mut indices);
     
     if pallette_colors.len() == 0{
         println!("Something went wrong while trying to create the color pallette");
@@ -51,6 +55,12 @@ fn main() -> Result<(), i8> {
         println!("Writing color pallette to {}", output_file);
         color_palletting::write_pallette(&output_file, &pallette_colors);
     }
+    println!("Finished writing the color pallette");
+
+    println!("Writing sprite with indirect indexing");
+
+    //TODO: Replace static values with user defined parameters
+    bitplaning::write_snes_sprite("./test_output.vra", &indices, 4, img.get_width() as usize);
 
     println!("Done");
 
