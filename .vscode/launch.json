@@ -19,7 +19,7 @@
                     "kind": "bin"
                 }
             },
-            "args": ["-i", ".\\test_sprite.bmp", "-o", ".\\test_output.pal"],
+            "args": ["-i", "test_sprite.bmp", "-o", "test_output.pal"],
             "cwd": "${workspaceFolder}"
         },
         {

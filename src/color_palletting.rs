@@ -55,9 +55,9 @@ fn rgb888_to_bgr555(rgb888_input: Pixel) -> u16 {
 
     //Set the 3 LSBs of every input color byte to 0
     //Also shift to right, so that the LSB zeros are shifted out
-    let unset_r = unset_LSBs(rgb888_input.r) >> 3;
-    let unset_g = unset_LSBs(rgb888_input.g) >> 3;
-    let unset_b = unset_LSBs(rgb888_input.b) >> 3;
+    let unset_r = unset_lsbs(rgb888_input.r) >> 3;
+    let unset_g = unset_lsbs(rgb888_input.g) >> 3;
+    let unset_b = unset_lsbs(rgb888_input.b) >> 3;
 
     //Set correspoding bits of u16 output
     bgr555_out = bgr555_out ^ (unset_r as u16);
@@ -67,7 +67,7 @@ fn rgb888_to_bgr555(rgb888_input: Pixel) -> u16 {
     return bgr555_out;
 }
 
-fn unset_LSBs(u8_input: u8) -> u8 {
+fn unset_lsbs(u8_input: u8) -> u8 {
     let tmp = 0xf8; //248, 11111|000
     u8_input & tmp
 }

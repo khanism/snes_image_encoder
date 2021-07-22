@@ -8,7 +8,8 @@ pub fn write_snes_sprite(output_path: &str, indices: &Vec<u8>, bpp: u8, stride: 
     let mut bitplanes: Vec<Vec<u8>> = Vec::new();
     //For every bit per pixel, create and add a bitplane
     for bit in 0..bpp{
-        bitplanes.push(vec![0; indices.len()]);
+        //Since bitplanes are always 8x8, the size is 64 (8x8).
+        bitplanes.push(vec![0; 64]);
     }
 
 
@@ -66,8 +67,8 @@ fn write_bitplanes(output_path: &str, bitplanes: &Vec< Vec<u8> >){
     let mut buffer: [u8; 2] = [0; 2];
 
     for row in 0..8{
-        buffer[0] = bp0[row];
-        buffer[1] = bp1[row];
+        buffer[0] = bp0[row*8];
+        buffer[1] = bp1[row*8];
         match file.write_all(&buffer){
             Err(why) => panic!("Could not write the bitplanes to {}: {}", output_path, why),
             Ok(_) => ()
@@ -75,8 +76,8 @@ fn write_bitplanes(output_path: &str, bitplanes: &Vec< Vec<u8> >){
     }
 
     for row in 0..8{
-        buffer[0] = bp2[row];
-        buffer[1] = bp3[row];
+        buffer[0] = bp2[row*8];
+        buffer[1] = bp3[row*8];
         match file.write_all(&buffer){
             Err(why) => panic!("Could not write the bitplanes to {}: {}", output_path, why),
             Ok(_) => ()
@@ -114,15 +115,29 @@ mod tests{
     #[test]
     fn test_bitplaning(){
         //Setup input indices and the expected output values of the bitplanes
+
+        //For the indices, currently only the first tile is relevant.
+        //For this reason the other index tiles, which are given here, ...
+        //...are currently not relevant, since we only do tests for the first tile.
+        //Other tiles are currently just fillers to make the test run.
         let input_indices = vec![
-            1,1,1,1,1,1,1,1,
-            1,1,1,1,1,1,1,1,
-            1,1,2,2,2,2,2,2,
-            1,1,2,2,2,2,2,2,
-            1,1,2,2,2,3,3,3,
-            1,1,2,2,2,3,3,3,
-            1,1,2,2,2,3,3,3,
-            1,1,2,2,2,3,3,4
+            1,1,1,1,1,1,1,1,    1,1,1,1,1,1,1,1,
+            1,1,1,1,1,1,1,1,    1,1,1,1,1,1,1,1,
+            1,1,2,2,2,2,2,2,    1,1,1,1,1,1,1,1,
+            1,1,2,2,2,2,2,2,    1,1,1,1,1,1,1,1,
+            1,1,2,2,2,3,3,3,    1,1,1,1,1,1,1,1,
+            1,1,2,2,2,3,3,3,    1,1,1,1,1,1,1,1,
+            1,1,2,2,2,3,3,3,    1,1,1,1,1,1,1,1,
+            1,1,2,2,2,3,3,4,     1,1,1,1,1,1,1,1,
+
+            1,1,1,1,1,1,1,1,    1,1,1,1,1,1,1,1,
+            1,1,1,1,1,1,1,1,    1,1,1,1,1,1,1,1,
+            1,1,1,1,1,1,1,1,    1,1,1,1,1,1,1,1,
+            1,1,1,1,1,1,1,1,    1,1,1,1,1,1,1,1,
+            1,1,1,1,1,1,1,1,    1,1,1,1,1,1,1,1,
+            1,1,1,1,1,1,1,1,    1,1,1,1,1,1,1,1,
+            1,1,1,1,1,1,1,1,    1,1,1,1,1,1,1,1,
+            1,1,1,1,1,1,1,1,    1,1,1,1,1,1,1,1
         ];
 
         let mut exptected_bitplanes: Vec< Vec<u8> > = Vec::new();
@@ -182,7 +197,7 @@ mod tests{
         let bpp = 4;
         let mut test_bitplanes: Vec<Vec<u8>> = Vec::new();
         for bit in 0..bpp{
-            test_bitplanes.push(vec![0; input_indices.len()]);
+            test_bitplanes.push(vec![0; 64]);
         }
 
         //Assuming a test image stride of 16.
