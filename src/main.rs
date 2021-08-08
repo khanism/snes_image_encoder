@@ -55,6 +55,7 @@ fn main() -> Result<(), i8> {
         println!("Writing color pallette to {}", output_file);
         color_palletting::write_pallette(&output_file, &pallette_colors);
     }
+    
     println!("Finished writing the color pallette");
 
     println!("Writing sprite with indirect indexing");
