@@ -1,4 +1,3 @@
-use std::path::Path;
 use std::fs::OpenOptions;
 use std::io::prelude::*;
 
@@ -26,7 +25,7 @@ pub fn write_snes_sprite(output_path: &str, indices: &Vec<u8>, bpp: u8, stride: 
     for tile_num in 0..4 {
         setup_bitplanes(indices, &mut tiles, stride, tile_num);
         transform_bitplanes(tiles.get_mut(0).unwrap() , stride); 
-        write_bitplanes(output_path, &tiles, stride, tile_num);
+        write_bitplanes(output_path, tiles.get(tile_num).unwrap(), stride);
     }
 
     println!(" --- Finished writing sprite bitplanes ----");
@@ -65,50 +64,47 @@ fn setup_bitplanes(indices: &Vec<u8>, bitplanes: &mut Vec< Vec<u8> >, stride: us
 
 //Write current bit planes out.
 //Doing that for every tile.
-fn write_bitplanes(output_path: &str, bitplanes: &Vec< Vec<u8> >, stride: usize, tile_num: usize){
-    let filepath = Path::new(output_path);
+//TODO: Update to new tiling system
+fn write_bitplanes(output_path: &str, bitplanes: &Vec<u8>, stride: usize){
+    
     let mut file = match OpenOptions::new()
                     .create(true)
                     .append(true).
                     open(output_path) {
 
-                    Err(why) => panic!("Could not create {}: {}", filepath.display(), why),
+                    Err(why) => panic!("Could not create {}: {}", output_path, why),
                     Ok(file) => file
     };
 
     //Print every byte of the bitplanes in the right order
     //Order here is: intertwined bp0 and bp1...
     //...and after that intertwined bp2 and bp3
-    let bp0 = bitplanes.get(0).unwrap();
-    let bp1 = bitplanes.get(1).unwrap();
-    let bp2 = bitplanes.get(2).unwrap();
-    let bp3 = bitplanes.get(3).unwrap();
-
-    let mut buffer: [u8; 2] = [0; 2];
-
-    let row_offs_bit = ((tile_num & 0x02) >> 1) as usize;
     
-    for row in (row_offs_bit*8)..(row_offs_bit*8+8){
+    //Each row has 2 bytes which we need to write
+    //There are 16 rows, which means we need a buffer of 2*16=32 bytes of size
+    let mut buffer: [u8; 32] = [0; 32];
+    let mut buffer_idx = 0;
+    
+    for row in 0..16{
 
-        //Write bp0 and bp1
-        buffer[0] = bp0[row*stride];
-        buffer[1] = bp1[row*stride];
-        match file.write_all(&buffer){
-            Err(why) => panic!("Could not write the bitplanes to {}: {}", output_path, why),
-            Ok(_) => ()
-        };
+        if row <= 7 {
+            //Write bp0 and bp1
+            buffer[buffer_idx] = bitplanes[row*stride];
+            buffer[buffer_idx+1] = bitplanes[row*stride+8];   
+        } else {
+            //Write bp2 and bp3
+            buffer[buffer_idx] = bitplanes[row*stride];
+            buffer[buffer_idx+1] = bitplanes[row*stride+8];
+        }
 
-        //TODO: Optimize with only one write call (instead calling write operation mutiple times).
+        buffer_idx += 2;
+    } 
 
-        //Write bp2 and bp3
-        buffer[0] = bp2[row*stride];
-        buffer[1] = bp3[row*stride];
-        match file.write_all(&buffer){
-            Err(why) => panic!("Could not write the bitplanes to {}: {}", output_path, why),
-            Ok(_) => ()
-        };
+    match file.write_all(&buffer){
+        Err(why) => panic!("Could not write the bitplanes to {}: {}", output_path, why),
+        Ok(_) => ()
+    };
 
-    }
 }
 
 // This takes the firt byte of every row and sets that byte...
@@ -228,13 +224,13 @@ mod tests{
 
         //Test bp2
         for idx in 0..8 {
-            assert_eq!(tile0[(8*16) + (idx *16)], bp2_bytes[idx]);
+            assert_eq!(tile0[(8*16) + (idx*16)], bp2_bytes[idx]);
         }
 
 
         //Test bp3
         for idx in 0..8 {
-            assert_eq!(tile0[(8*16) + (idx *16) + 8], bp3_bytes[idx]);
+            assert_eq!(tile0[(8*16) + (idx*16) + 8], bp3_bytes[idx]);
         }
     }
 }
